@@ -5,11 +5,12 @@ public class Main {
 
     static final String FILE_NAME = "student.txt";
     static Scanner sc = new Scanner(System.in);
-    static final String DELIMITER = "=====>>"; // new delimiter
+    static final String DELIMITER = "=====>>";
 
     public static void main(String[] args) {
 
         File file = new File(FILE_NAME);
+
         try {
             if (file.createNewFile()) {
                 System.out.println("File created: " + file.getName());
@@ -19,6 +20,7 @@ public class Main {
         }
 
         while (true) {
+
             System.out.println("\n==== Student Record System ====");
             System.out.println("1. Add Student");
             System.out.println("2. View All Students");
@@ -31,21 +33,27 @@ public class Main {
             sc.nextLine(); // clear buffer
 
             switch (choice) {
+
                 case 1:
                     addStudent();
                     break;
+
                 case 2:
                     viewStudents();
                     break;
+
                 case 3:
                     searchStudent();
                     break;
+
                 case 4:
                     deleteStudent();
                     break;
+
                 case 5:
                     System.out.println("Exiting...");
                     return;
+
                 default:
                     System.out.println("Invalid choice!");
             }
@@ -54,6 +62,7 @@ public class Main {
 
     // ADD STUDENT
     static void addStudent() {
+
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_NAME, true))) {
 
             System.out.print("Enter Student ID: ");
@@ -61,20 +70,31 @@ public class Main {
 
             String name;
             while (true) {
-              System.out.print("Enter Student Name (letters only): ");
-               name = sc.nextLine();
 
-                  if (name.matches("[a-zA-Z ]+")) {
-                     break; // valid name
-                      } else {
-                System.out.println("Invalid input! Please enter letters only.");
-                     }
-                    }
+                System.out.print("Enter Student Name (Alphabet only): ");
+                name = sc.nextLine();
 
+                if (name.matches("[a-zA-Z ]+")) {
+                    break;
+                } else {
+                    System.out.println("Invalid input! Please enter letters only.");
+                }
+            }
 
             System.out.print("Enter Student Age: ");
-            int age = sc.nextInt();
-            sc.nextLine();
+
+            int age;
+            while (true) {
+
+                age = sc.nextInt();
+                sc.nextLine();
+
+                if (age >= 15 && age <= 120) {
+                    break;
+                } else {
+                    System.out.println("Enter between 15 to 120");
+                }
+            }
 
             bw.write(id + DELIMITER + name + DELIMITER + age);
             bw.newLine();
@@ -88,12 +108,14 @@ public class Main {
 
     // VIEW STUDENTS
     static void viewStudents() {
+
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
 
             String line;
             System.out.println("\n--- Student Records ---");
 
             while ((line = br.readLine()) != null) {
+
                 String[] data = line.split(DELIMITER);
 
                 if (data.length < 3) {
@@ -101,9 +123,11 @@ public class Main {
                     continue;
                 }
 
-                System.out.println("ID=====>>" + data[0] +
+                System.out.println(
+                        "ID=====>> " + data[0] +
                         " | Name=====>> " + data[1] +
-                        " | Age=====>> " + data[2]);
+                        " | Age=====>> " + data[2]
+                );
             }
 
         } catch (IOException e) {
@@ -113,6 +137,7 @@ public class Main {
 
     // SEARCH STUDENT
     static void searchStudent() {
+
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
 
             System.out.print("Enter Student ID to search: ");
@@ -122,20 +147,29 @@ public class Main {
             boolean found = false;
 
             while ((line = br.readLine()) != null) {
+
                 String[] data = line.split(DELIMITER);
 
-                if (data.length < 3) continue;
+                if (data.length < 3) {
+                    continue;
+                }
 
                 if (data[0].equals(searchId)) {
-                    System.out.println("ID: " + data[0] +
+
+                    System.out.println(
+                            "ID: " + data[0] +
                             " | Name: " + data[1] +
-                            " | Age: " + data[2]);
+                            " | Age: " + data[2]
+                    );
+
                     found = true;
                     break;
                 }
             }
 
-            if (!found) System.out.println("Student not found.");
+            if (!found) {
+                System.out.println("Student not found.");
+            }
 
         } catch (IOException e) {
             System.out.println("Error: " + e);
@@ -144,6 +178,7 @@ public class Main {
 
     // DELETE STUDENT
     static void deleteStudent() {
+
         File inputFile = new File(FILE_NAME);
         File tempFile = new File("temp.txt");
 
@@ -151,6 +186,7 @@ public class Main {
                 BufferedReader br = new BufferedReader(new FileReader(inputFile));
                 BufferedWriter bw = new BufferedWriter(new FileWriter(tempFile))
         ) {
+
             System.out.print("Enter Student ID to delete: ");
             String deleteId = sc.nextLine();
 
@@ -158,6 +194,7 @@ public class Main {
             boolean found = false;
 
             while ((line = br.readLine()) != null) {
+
                 String[] data = line.split(DELIMITER);
 
                 if (data.length < 3) {
