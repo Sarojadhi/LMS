@@ -1,228 +1,262 @@
 import java.io.*;
 import java.util.Scanner;
 
+class Student {
+    String id;
+    String name;
+    int age;
+
+    Student(String id, String name, int age) {
+        this.id = id;
+        this.name = name;
+        this.age = age;
+    }
+
+    public String toString() {
+        return id + "=====>>" + name + "=====>>" + age;
+    }
+}
+
 public class Main {
 
     static final String FILE_NAME = "student.txt";
-    static Scanner sc = new Scanner(System.in);
     static final String DELIMITER = "=====>>";
+    static Scanner sc = new Scanner(System.in);
 
     public static void main(String[] args) {
 
-        File file = new File(FILE_NAME);
-
-        try {
-            if (file.createNewFile()) {
-                System.out.println("File created: " + file.getName());
-            }
-        } catch (IOException e) {
-            System.out.println("Error: " + e);
-        }
+        createFile();
 
         while (true) {
-
             System.out.println("\n==== Student Record System ====");
             System.out.println("1. Add Student");
-            System.out.println("2. View All Students");
-            System.out.println("3. Search Student by ID");
-            System.out.println("4. Delete Student");
-            System.out.println("5. Save And Exit");
+            System.out.println("2. View Students");
+            System.out.println("3. Search Student");
+            System.out.println("4. Update Student");
+            System.out.println("5. Delete Student");
+            System.out.println("6. Exit");
             System.out.print("Choose option: ");
 
-            int choice = sc.nextInt();
-            sc.nextLine(); // clear buffer
+            int choice = getIntInput();
 
             switch (choice) {
-
                 case 1:
                     addStudent();
                     break;
-
                 case 2:
                     viewStudents();
                     break;
-
                 case 3:
                     searchStudent();
                     break;
-
                 case 4:
+                    updateStudent();
+                    break;
+                case 5:
                     deleteStudent();
                     break;
-
-                case 5:
+                case 6:
                     System.out.println("Exiting...");
                     return;
-
                 default:
                     System.out.println("Invalid choice!");
             }
         }
     }
 
+    // CREATE FILE
+    static void createFile() {
+        try {
+            File file = new File(FILE_NAME);
+            file.createNewFile();
+        } catch (IOException e) {
+            System.out.println("File error");
+        }
+    }
+
     // ADD STUDENT
     static void addStudent() {
 
+        System.out.print("Enter ID: ");
+        String id = sc.nextLine();
+
+        if (id.isEmpty() || idExists(id)) {
+            System.out.println("Invalid or duplicate ID");
+            return;
+        }
+
+        String name;
+        while (true) {
+            System.out.print("Enter Name: ");
+            name = sc.nextLine();
+            if (name.matches("[a-zA-Z ]+")) break;
+            System.out.println("Letters only!");
+        }
+
+        System.out.print("Enter Age: ");
+        int age = getIntRange(15, 120);
+
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_NAME, true))) {
-
-            System.out.print("Enter Student ID: ");
-            String id = sc.nextLine();
-
-            String name;
-            while (true) {
-
-                System.out.print("Enter Student Name (Alphabet only): ");
-                name = sc.nextLine();
-
-                if (name.matches("[a-zA-Z ]+")) {
-                    break;
-                } else {
-                    System.out.println("Invalid input! Please enter letters only.");
-                }
-            }
-
-            System.out.print("Enter Student Age: ");
-
-            int age;
-            while (true) {
-
-                age = sc.nextInt();
-                sc.nextLine();
-
-                if (age >= 15 && age <= 120) {
-                    break;
-                } else {
-                    System.out.println("Enter between 15 to 120");
-                }
-            }
-
-            bw.write(id + DELIMITER + name + DELIMITER + age);
+            bw.write(new Student(id, name, age).toString());
             bw.newLine();
-
-            System.out.println("Student added successfully!");
-
+            System.out.println("Student added");
         } catch (IOException e) {
-            System.out.println("Error: " + e);
+            System.out.println("Write error");
         }
     }
 
     // VIEW STUDENTS
     static void viewStudents() {
-
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
-
             String line;
-            System.out.println("\n--- Student Records ---");
-
+            System.out.println("\n--- Records ---");
             while ((line = br.readLine()) != null) {
-
-                String[] data = line.split(DELIMITER);
-
-                if (data.length < 3) {
-                    System.out.println("Invalid record skipped: " + line);
-                    continue;
-                }
-
-                System.out.println(
-                        "ID=====>> " + data[0] +
-                        " | Name=====>> " + data[1] +
-                        " | Age=====>> " + data[2]
-                );
+                String[] d = line.split(DELIMITER);
+                if (d.length < 3) continue;
+                System.out.println("ID: " + d[0] + " | Name: " + d[1] + " | Age: " + d[2]);
             }
-
         } catch (IOException e) {
-            System.out.println("Error: " + e);
+            System.out.println("Read error");
         }
     }
 
-    // SEARCH STUDENT
+    // SEARCH
     static void searchStudent() {
+        System.out.print("Enter ID: ");
+        String id = sc.nextLine();
+        boolean found = false;
 
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
-
-            System.out.print("Enter Student ID to search: ");
-            String searchId = sc.nextLine();
-
             String line;
-            boolean found = false;
-
             while ((line = br.readLine()) != null) {
-
-                String[] data = line.split(DELIMITER);
-
-                if (data.length < 3) {
-                    continue;
-                }
-
-                if (data[0].equals(searchId)) {
-
-                    System.out.println(
-                            "ID: " + data[0] +
-                            " | Name: " + data[1] +
-                            " | Age: " + data[2]
-                    );
-
+                String[] d = line.split(DELIMITER);
+                if (d.length < 3) continue;
+                if (d[0].equals(id)) {
+                    System.out.println("Found → " + d[1] + ", Age: " + d[2]);
                     found = true;
                     break;
                 }
             }
-
-            if (!found) {
-                System.out.println("Student not found.");
-            }
-
         } catch (IOException e) {
-            System.out.println("Error: " + e);
+            System.out.println("Search error");
         }
+
+        if (!found) System.out.println("Student not found");
     }
 
-    // DELETE STUDENT
-    static void deleteStudent() {
+    // UPDATE
+    static void updateStudent() {
 
-        File inputFile = new File(FILE_NAME);
-        File tempFile = new File("temp.txt");
+        File temp = new File("temp.txt");
+        boolean updated = false;
+
+        System.out.print("Enter ID to update: ");
+        String id = sc.nextLine();
 
         try (
-                BufferedReader br = new BufferedReader(new FileReader(inputFile));
-                BufferedWriter bw = new BufferedWriter(new FileWriter(tempFile))
+                BufferedReader br = new BufferedReader(new FileReader(FILE_NAME));
+                BufferedWriter bw = new BufferedWriter(new FileWriter(temp))
         ) {
-
-            System.out.print("Enter Student ID to delete: ");
-            String deleteId = sc.nextLine();
-
             String line;
-            boolean found = false;
-
             while ((line = br.readLine()) != null) {
+                String[] d = line.split(DELIMITER);
+                if (d.length < 3) continue;
 
-                String[] data = line.split(DELIMITER);
+                if (d[0].equals(id)) {
+                    String name;
+                    while (true) {
+                        System.out.print("New Name: ");
+                        name = sc.nextLine();
+                        if (name.matches("[a-zA-Z ]+")) break;
+                        System.out.println("Letters only!");
+                    }
 
-                if (data.length < 3) {
+                    System.out.print("New Age: ");
+                    int age = getIntRange(15, 120);
+                    bw.write(new Student(id, name, age).toString());
+                    updated = true;
+                } else {
                     bw.write(line);
-                    bw.newLine();
+                }
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            System.out.println("Update error");
+        }
+
+        replaceFile(temp, updated, "Updated", "ID not found");
+    }
+
+    // DELETE
+    static void deleteStudent() {
+
+        File temp = new File("temp.txt");
+        boolean deleted = false;
+
+        System.out.print("Enter ID to delete: ");
+        String id = sc.nextLine();
+
+        try (
+                BufferedReader br = new BufferedReader(new FileReader(FILE_NAME));
+                BufferedWriter bw = new BufferedWriter(new FileWriter(temp))
+        ) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] d = line.split(DELIMITER);
+                if (d.length < 3) continue;
+
+                if (d[0].equals(id)) {
+                    deleted = true;
                     continue;
                 }
-
-                if (data[0].equals(deleteId)) {
-                    found = true;
-                    continue;
-                }
-
                 bw.write(line);
                 bw.newLine();
             }
-
-            if (found) {
-                inputFile.delete();
-                tempFile.renameTo(inputFile);
-                System.out.println("Student deleted successfully.");
-            } else {
-                tempFile.delete();
-                System.out.println("Student not found.");
-            }
-
         } catch (IOException e) {
-            System.out.println("Error: " + e);
+            System.out.println("Delete error");
+        }
+
+        replaceFile(temp, deleted, "Deleted", "ID not found");
+    }
+
+    // HELPERS
+    static boolean idExists(String id) {
+        try (BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.startsWith(id + DELIMITER)) return true;
+            }
+        } catch (IOException e) {}
+        return false;
+    }
+
+    static int getIntInput() {
+        while (!sc.hasNextInt()) {
+            sc.next();
+            System.out.print("Enter number: ");
+        }
+        int n = sc.nextInt();
+        sc.nextLine();
+        return n;
+    }
+
+    static int getIntRange(int min, int max) {
+        int n;
+        while (true) {
+            n = getIntInput();
+            if (n >= min && n <= max) return n;
+            System.out.print("Enter between " + min + " - " + max + ": ");
+        }
+    }
+
+    static void replaceFile(File temp, boolean success, String ok, String fail) {
+        File original = new File(FILE_NAME);
+        if (success && original.delete()) {
+            temp.renameTo(original);
+            System.out.println(ok);
+        } else {
+            temp.delete();
+            System.out.println(fail);
         }
     }
 }
